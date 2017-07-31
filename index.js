@@ -71,8 +71,8 @@ GcloudStorage.prototype._handleFile = function (req, file, cb) {
     if (err) return cb(err)
 
     function getPublicUrl(storageName) {
-      return `https://firebasestorage.googleapis.com/v0/b/platzigram-151d3.\
-      appspot.com/o/${encodeURIComponent(storageName)}?alt=media`;
+      const = urlBase = `https://firebasestorage.googleapis.com`;
+      return `${urlBase}/v0/b/platzigram-151d3.appspot.com/o/${encodeURIComponent(storageName)}?alt=media`;
     }
 
     const uploadTo = `${opts.destination}/${opts.filename}`
