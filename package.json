@@ -1,6 +1,6 @@
 {
   "name": "multer-gcloud",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A storage module for connect with multer.",
   "main": "index.js",
   "scripts": {
