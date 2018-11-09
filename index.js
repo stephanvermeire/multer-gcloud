@@ -41,6 +41,9 @@ function collect (storage, req, file, cb) {
 }
 
 function GcloudStorage (opts) {
+
+  this.isPublic = (opts.isPublic===true);
+
   switch (typeof opts.bucket) {
     case 'object': this.bucket = opts.bucket; break
     default: throw new TypeError('Expected opts.bucket to be object')
@@ -70,9 +73,9 @@ GcloudStorage.prototype._handleFile = function (req, file, cb) {
   collect(this, req, file, function (err, opts) {
     if (err) return cb(err)
 
-    function getPublicUrl(storageName) {
-      const urlBase = `https://firebasestorage.googleapis.com`;
-      return `${urlBase}/v0/b/platzigram-151d3.appspot.com/o/${encodeURIComponent(storageName)}?alt=media`;
+    function getPublicUrl(file_bucket) {
+      const urlBase = `https://storage.googleapis.com`;
+      return `${urlBase}/${encodeURIComponent(file_bucket.metadata.bucket)}/${encodeURIComponent(file_bucket.metadata.name)}?alt=media`;
     }
 
     const uploadTo = `${opts.destination}/${opts.filename}`
@@ -83,23 +86,39 @@ GcloudStorage.prototype._handleFile = function (req, file, cb) {
         contentType: file.mimetype
       }
     });
+    const isPublic = (this.isPublic === true);
 
     stream.on('error', (err) => {
       cb(err);
-    });
+  });
 
     localReadStream.pipe(stream);
 
     stream.on('finish', () => {
-      publicUrl = getPublicUrl(uploadTo);
+      publicUrl = getPublicUrl(file_bucket);
 
-      cb(null, {
+    if(isPublic) {
+      file_bucket.makePublic().then(() => {
+        //__newFile.extra.Location = "https://storage.googleapis.com/" + globalOpts.bucket + "/" + __newFile.fd;
+        cb(null, {
         bucket: this.bucket,
-        contentType: opts.contentType,
-        metadata: file,
-        location: getPublicUrl(uploadTo)
+          contentType: opts.contentType,
+          metadata: file,
+          location: getPublicUrl(file_bucket)
       });
     });
+    } else {
+      file_bucket.makePrivate().then(() => {
+        cb(null, {
+        bucket: this.bucket,
+          contentType: opts.contentType,
+          metadata: file,
+          location: getPublicUrl(file_bucket)
+      });
+    });
+    }
+
+  });
   })
 }
 
