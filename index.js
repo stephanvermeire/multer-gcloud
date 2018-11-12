@@ -75,7 +75,7 @@ GcloudStorage.prototype._handleFile = function (req, file, cb) {
 
     function getPublicUrl(file_bucket) {
       const urlBase = `https://storage.googleapis.com`;
-      return `${urlBase}/${encodeURIComponent(file_bucket.metadata.bucket)}/${encodeURIComponent(file_bucket.metadata.name)}?alt=media`;
+      return `${urlBase}/${encodeURIComponent(file_bucket.metadata.bucket)}/${encodeURIComponent(file_bucket.metadata.name)}`;
     }
 
     const uploadTo = `${opts.destination}/${opts.filename}`
@@ -113,7 +113,8 @@ GcloudStorage.prototype._handleFile = function (req, file, cb) {
         bucket: this.bucket,
           contentType: opts.contentType,
           metadata: file,
-          location: getPublicUrl(file_bucket)
+          location: getPublicUrl(file_bucket),
+          bucketFileName: file_bucket.metadata.name
       });
     });
     }
