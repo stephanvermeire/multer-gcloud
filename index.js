@@ -75,7 +75,7 @@ GcloudStorage.prototype._handleFile = function (req, file, cb) {
 
     function getPublicUrl(file_bucket) {
       const urlBase = `https://storage.googleapis.com`;
-      return `${urlBase}/${encodeURIComponent(file_bucket.metadata.bucket)}/${encodeURIComponent(file_bucket.metadata.name)}`;
+      return `${urlBase}/${encodeURIComponent(file_bucket.metadata.bucket)}/${encodeURIComponent(file_bucket.metadata.name)}?alt=media`;
     }
 
     const uploadTo = `${opts.destination}/${opts.filename}`
@@ -97,14 +97,19 @@ GcloudStorage.prototype._handleFile = function (req, file, cb) {
     stream.on('finish', () => {
       publicUrl = getPublicUrl(file_bucket);
 
+    const name = file_bucket.metadata.name;
+
     if(isPublic) {
       file_bucket.makePublic().then(() => {
         //__newFile.extra.Location = "https://storage.googleapis.com/" + globalOpts.bucket + "/" + __newFile.fd;
         cb(null, {
         bucket: this.bucket,
           contentType: opts.contentType,
-          metadata: file,
-          location: getPublicUrl(file_bucket)
+          metadata: {
+        ...file,
+            name
+        },
+        location: getPublicUrl(file_bucket)
       });
     });
     } else {
@@ -112,9 +117,11 @@ GcloudStorage.prototype._handleFile = function (req, file, cb) {
         cb(null, {
         bucket: this.bucket,
           contentType: opts.contentType,
-          metadata: file,
-          location: getPublicUrl(file_bucket),
-          bucketFileName: file_bucket.metadata.name
+          metadata: {
+        ...file,
+            name
+        },
+        location: getPublicUrl(file_bucket)
       });
     });
     }
